@@ -11,6 +11,8 @@ var defaults = {
 	},
 	weekends: true,
 	currentTimeIndicator: false,
+
+	selectionSpacer: true,
 	
 	// editing
 	//editable: false,
