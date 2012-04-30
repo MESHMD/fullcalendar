@@ -209,6 +209,7 @@ function View(element, calendar, viewName) {
 	function eventResize(e, event, dayDelta, minuteDelta, ev, ui) {
 		var eventId = event._id;
 		elongateEvents(eventsByID[eventId], dayDelta, minuteDelta);
+		var eventChangeReported = false;
 		trigger(
 			'eventResize',
 			e,
@@ -219,11 +220,14 @@ function View(element, calendar, viewName) {
 				// TODO: investigate cases where this inverse technique might not work
 				elongateEvents(eventsByID[eventId], -dayDelta, -minuteDelta);
 				reportEventChange(eventId);
+				eventChangeReported = true;
 			},
 			ev,
 			ui
 		);
-		reportEventChange(eventId);
+		if (!eventChangeReported) {
+			reportEventChange(eventId);
+		}
 	}
 	
 	
