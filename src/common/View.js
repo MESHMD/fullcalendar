@@ -123,6 +123,13 @@ function View(element, calendar, viewName) {
 	
 	
 	function reportEventClear() {
+		for (var eventId in eventElementsByID) {
+			var elements = eventElementsByID[eventId];
+			var event = eventsByID[eventId][0];
+			for (var index in elements) {
+				trigger('eventBeforeDispose', event, event, elements[index]);
+			}
+		}		
 		eventElements = [];
 		eventElementsByID = {};
 	}
