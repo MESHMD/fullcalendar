@@ -94,7 +94,9 @@ var defaults = {
 	//selectable: false,
 	unselectAuto: true,
 	
-	dropAccept: '*'
+	dropAccept: '*',
+	
+	hookWindowResize: true
 	
 };
 
