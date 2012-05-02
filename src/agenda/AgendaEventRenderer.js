@@ -360,7 +360,7 @@ function AgendaEventRenderer() {
 		if (isEventDraggable(event)) {
 			draggableSlotEvent(event, eventElement, timeElement);
 		}
-		if (seg.isEnd && isEventResizable(event)) {
+		if (((seg.isStart && opt('allowResizeTop')) || seg.isEnd) && isEventResizable(event)) {
 			resizableSlotEvent(event, eventElement, timeElement);
 		}
 		eventElementHandlers(event, eventElement);
