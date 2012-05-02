@@ -315,7 +315,12 @@ function AgendaEventRenderer() {
 			" class='" + classes.join(' ') + "'" +
 			" style='position:absolute;z-index:8;top:" + seg.top + "px;left:" + seg.left + "px;" + skinCss + "'" +
 			">" +
-			"<div class='fc-event-inner fc-event-skin'" + skinCssAttr + ">" +
+			"<div class='fc-event-inner fc-event-skin'" + skinCssAttr + ">";
+			if (opt('allowResizeTop') && seg.isStart && isEventResizable(event)) {
+				html +=
+					"<div class='ui-resizable-handle ui-resizable-n'>=</div>";
+			}
+			html +=
 			"<div class='fc-event-head fc-event-skin'" + skinCssAttr + ">" +
 			"<div class='fc-event-time'>" +
 			htmlEscape(formatDates(event.start, event.end, opt('timeFormat'))) +
@@ -601,26 +606,39 @@ function AgendaEventRenderer() {
 	function resizableSlotEvent(event, eventElement, timeElement) {
 		var slotDelta, prevSlotDelta;
 		var slotHeight = getSlotHeight();
+		var usedHandle;
 		eventElement.resizable({
 			handles: {
-				s: 'div.ui-resizable-s'
+				s: 'div.ui-resizable-s',
+				n: 'div.ui-resizable-n'
 			},
 			grid: slotHeight,
 			start: function(ev, ui) {
 				slotDelta = prevSlotDelta = 0;
 				hideEvents(event, eventElement);
 				eventElement.css('z-index', 9);
+				if ($(ev.target).hasClass("ui-resizable-s")) {
+					usedHandle = "s";
+				} else {
+					usedHandle = "n";
+				}
 				trigger('eventResizeStart', this, event, ev, ui);
 			},
 			resize: function(ev, ui) {
 				// don't rely on ui.size.height, doesn't take grid into account
 				slotDelta = Math.round((Math.max(slotHeight, eventElement.height()) - ui.originalSize.height) / slotHeight);
 				if (slotDelta != prevSlotDelta) {
+					var eventStart = usedHandle === 'n' ? addMinutes(cloneDate(event.start), -1 * opt('slotMinutes')*slotDelta) : event.start;
+					var eventEnd;
+					if (!slotDelta && !event.end) {
+						eventEnd = null;
+					} else {
+						eventEnd = usedHandle === 's' ? addMinutes(eventEnd(event), opt('slotMinutes')*slotDelta) : event.end;
+					}
 					timeElement.text(
 						formatDates(
-							event.start,
-							(!slotDelta && !event.end) ? null : // no change, so don't display time range
-								addMinutes(eventEnd(event), opt('slotMinutes')*slotDelta),
+							eventStart,
+							eventEnd,
 							opt('timeFormat')
 						)
 					);
@@ -630,7 +648,7 @@ function AgendaEventRenderer() {
 			stop: function(ev, ui) {
 				trigger('eventResizeStop', this, event, ev, ui);
 				if (slotDelta) {
-					eventResize(this, event, 0, opt('slotMinutes')*slotDelta, ev, ui);
+					eventResize(this, event, 0, opt('slotMinutes')*slotDelta, ev, ui, usedHandle === 'n');
 				}else{
 					eventElement.css('z-index', 8);
 					showEvents(event, eventElement);
