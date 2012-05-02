@@ -628,17 +628,17 @@ function AgendaEventRenderer() {
 				// don't rely on ui.size.height, doesn't take grid into account
 				slotDelta = Math.round((Math.max(slotHeight, eventElement.height()) - ui.originalSize.height) / slotHeight);
 				if (slotDelta != prevSlotDelta) {
-					var eventStart = usedHandle === 'n' ? addMinutes(cloneDate(event.start), -1 * opt('slotMinutes')*slotDelta) : event.start;
-					var eventEnd;
+					var eventStartDate = usedHandle === 'n' ? addMinutes(cloneDate(event.start), -1 * opt('slotMinutes')*slotDelta) : event.start;
+					var eventEndDate;
 					if (!slotDelta && !event.end) {
-						eventEnd = null;
+						eventEndDate = null;
 					} else {
-						eventEnd = usedHandle === 's' ? addMinutes(eventEnd(event), opt('slotMinutes')*slotDelta) : event.end;
+						eventEndDate = usedHandle === 's' ? addMinutes(eventEnd(event), opt('slotMinutes')*slotDelta) : event.end;
 					}
 					timeElement.text(
 						formatDates(
-							eventStart,
-							eventEnd,
+							eventStartDate,
+							eventEndDate,
 							opt('timeFormat')
 						)
 					);
