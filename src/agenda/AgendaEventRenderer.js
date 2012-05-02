@@ -509,6 +509,7 @@ function AgendaEventRenderer() {
 		var colWidth = getColWidth();
 		var slotHeight = getSlotHeight();
 		var scroll = opt('scrollWhileDragging');
+		var prevTimeText = timeElement.text();
 		eventElement.draggable({
 			zIndex: 9,
 			scroll: scroll,
@@ -551,12 +552,10 @@ function AgendaEventRenderer() {
 					ui.position.top = origPosition.top + Math.floor((ui.position.top - origPosition.top) / slotHeight) * slotHeight;
 		        }
 				minuteDelta = Math.round((ui.position.top - origPosition.top) / slotHeight) * opt('slotMinutes');
-				if (minuteDelta != prevMinuteDelta) {
-					if (!allDay) {
-						updateTimeText(minuteDelta);
-					}
-					prevMinuteDelta = minuteDelta;
+				if (!allDay) {
+					updateTimeText(minuteDelta);
 				}
+				prevMinuteDelta = minuteDelta;
 			},
 			stop: function(ev, ui) {
 				var cell = hoverListener.stop();
@@ -570,7 +569,7 @@ function AgendaEventRenderer() {
 					resetElement();
 					eventElement.css('filter', ''); // clear IE opacity side-effects
 					eventElement.css(origPosition); // sometimes fast drags make event revert to wrong position
-					updateTimeText(0);
+					timeElement.text(prevTimeText);
 					showEvents(event, eventElement);
 				}
 			}
