@@ -66,7 +66,7 @@ function View(element, calendar, viewName) {
 	
 	
 	function isEventDraggable(event) {
-		return isEventEditable(event) && !opt('disableDragging');
+		return isEventEditable(event) && !opt('disableDragging') && !event.disableDragging;
 	}
 	
 	
