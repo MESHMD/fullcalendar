@@ -54,6 +54,7 @@ function AgendaView(element, calendar, viewName) {
 	t.getSlotHeight = function() { return slotHeight };
 	t.defaultSelectionEnd = defaultSelectionEnd;
 	t.renderDayOverlay = renderDayOverlay;
+	t.renderSlotOverlay = renderSlotOverlay;
 	t.renderSelection = renderSelection;
 	t.clearSelection = clearSelection;
 	t.reportDayClick = reportDayClick; // selection mousedown hack
