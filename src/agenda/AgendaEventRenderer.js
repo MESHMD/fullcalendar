@@ -615,6 +615,7 @@ function AgendaEventRenderer() {
 		var slotDelta, prevSlotDelta;
 		var slotHeight = getSlotHeight();
 		var usedHandle;
+		var origTimeText = timeElement.text();
 		eventElement.resizable({
 			handles: {
 				s: 'div.ui-resizable-s',
@@ -654,6 +655,7 @@ function AgendaEventRenderer() {
 				}
 			},
 			stop: function(ev, ui) {
+				timeElement.text(origTimeText);
 				trigger('eventResizeStop', this, event, ev, ui);
 				if (slotDelta) {
 					eventResize(this, event, 0, opt('slotMinutes')*slotDelta, ev, ui, usedHandle === 'n');
