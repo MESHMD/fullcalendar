@@ -655,11 +655,11 @@ function AgendaEventRenderer() {
 				}
 			},
 			stop: function(ev, ui) {
-				timeElement.text(origTimeText);
 				trigger('eventResizeStop', this, event, ev, ui);
 				if (slotDelta) {
 					eventResize(this, event, 0, opt('slotMinutes')*slotDelta, ev, ui, usedHandle === 'n');
 				}else{
+					timeElement.text(origTimeText);
 					eventElement.css('z-index', 8);
 					showEvents(event, eventElement);
 					// BUG: if event was really short, need to put title back in span
