@@ -526,6 +526,9 @@ function AgendaEventRenderer() {
 				trigger('eventDragStart', eventElement, event, ev, ui);
 				hideEvents(event, eventElement);
 				origPosition = eventElement.position();
+				// fixes wrong positioning upon revert
+				ui.originalPosition.top = origPosition.top;
+				ui.originalPosition.left = origPosition.left;
 				minuteDelta = prevMinuteDelta = 0;
 				hoverListener.start(function(cell, origCell, rowDelta, colDelta) {
 					eventElement.draggable('option', 'revert', !cell);
@@ -566,16 +569,21 @@ function AgendaEventRenderer() {
 				var cell = hoverListener.stop();
 				clearOverlays();
 				trigger('eventDragStop', eventElement, event, ev, ui);
+				var revertAfterDropCallback = function() {
+					ui.helper.animate(ui.originalPosition, function() {
+						resetElement();
+						eventElement.css('filter', ''); // clear IE opacity side-effects
+						eventElement.css(origPosition); // sometimes fast drags make event revert to wrong position
+						timeElement.text(prevTimeText);
+						showEvents(event, eventElement);
+					});
+				};
 				if (cell && (dayDelta || minuteDelta || allDay)) {
 					// changed!
-					eventDrop(this, event, dayDelta, allDay ? 0 : minuteDelta, allDay, ev, ui);
+					eventDrop(this, event, dayDelta, allDay ? 0 : minuteDelta, allDay, ev, ui, revertAfterDropCallback);
 				}else{
 					// either no change or out-of-bounds (draggable has already reverted)
-					resetElement();
-					eventElement.css('filter', ''); // clear IE opacity side-effects
-					eventElement.css(origPosition); // sometimes fast drags make event revert to wrong position
-					timeElement.text(prevTimeText);
-					showEvents(event, eventElement);
+					revertAfterDropCallback();
 				}
 			}
 		});

@@ -183,10 +183,12 @@ function View(element, calendar, viewName) {
 	---------------------------------------------------------------------------------*/
 	
 	
-	function eventDrop(e, event, dayDelta, minuteDelta, allDay, ev, ui) {
+	function eventDrop(e, event, dayDelta, minuteDelta, allDay, ev, ui, revertAfterDropCallback) {
 		var oldAllDay = event.allDay;
 		var eventId = event._id;
 		moveEvents(eventsByID[eventId], dayDelta, minuteDelta, allDay);
+		var reverted = false;
+		var changeReported = false;
 		trigger(
 			'eventDrop',
 			e,
@@ -197,12 +199,19 @@ function View(element, calendar, viewName) {
 			function() {
 				// TODO: investigate cases where this inverse technique might not work
 				moveEvents(eventsByID[eventId], -dayDelta, -minuteDelta, oldAllDay);
-				reportEventChange(eventId);
+				revertAfterDropCallback && revertAfterDropCallback();
+				reverted = true;
+				if (changeReported) {
+					reportEventChange(eventId);
+				}
 			},
 			ev,
 			ui
 		);
-		reportEventChange(eventId);
+		if (!reverted) {
+			reportEventChange(eventId);
+			changeReported = true;
+		}
 	}
 	
 	
