@@ -281,6 +281,11 @@ function Calendar(element, options, eventSources) {
 			absoluteViewElement = null;
 		}
 		currentView.setWidth(content.width(), dateChanged);
+		/* call height calculation again, as during first calculation, the day-col daynames could have
+		 * wrapped and so, the distance of the content-container to the day-names could have been falsely
+		 * calculated.
+		 */
+		currentView.setHeight(suggestedViewHeight, dateChanged);
 		ignoreWindowResize--;
 	}
 	
