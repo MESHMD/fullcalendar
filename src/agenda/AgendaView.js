@@ -396,6 +396,9 @@ function AgendaView(element, calendar, viewName) {
 
 
 	function resetScroll() {
+		if (opt('skipScrollActions')) {
+			return;
+		}
 		var d0 = zeroDate();
 		var scrollDate = cloneDate(d0);
 		scrollDate.setHours(opt('firstHour'));
@@ -414,6 +417,9 @@ function AgendaView(element, calendar, viewName) {
 	
 	
 	function afterShow() {
+		if (opt('skipScrollActions')) {
+			return;
+		}
 		slotScroller.scrollTop(savedScrollTop);
 	}
 	
