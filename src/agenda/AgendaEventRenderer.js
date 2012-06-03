@@ -559,6 +559,7 @@ function AgendaEventRenderer() {
 		        	// reposition to grid
 					ui.position.top = origPosition.top + Math.floor((ui.position.top - origPosition.top) / slotHeight) * slotHeight;
 		        }
+				ui.position.left = origPosition.left + (dayDelta * dis) * colWidth;
 				minuteDelta = Math.round((ui.position.top - origPosition.top) / slotHeight) * opt('slotMinutes');
 				if (!allDay) {
 					updateTimeText(minuteDelta);
