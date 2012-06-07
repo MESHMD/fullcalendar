@@ -627,7 +627,7 @@ function AgendaEventRenderer() {
 				slotDelta = prevSlotDelta = 0;
 				hideEvents(event, eventElement);
 				eventElement.css('z-index', 9);
-				if ($(ev.target).hasClass("ui-resizable-s")) {
+				if ($(ev.originalEvent.target).hasClass("ui-resizable-s")) {
 					usedHandle = "s";
 				} else {
 					usedHandle = "n";
