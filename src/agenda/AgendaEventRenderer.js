@@ -614,9 +614,11 @@ function AgendaEventRenderer() {
 	
 	function resizableSlotEvent(event, eventElement, timeElement) {
 		var slotDelta, prevSlotDelta;
+		var minutesDelta = 0;
 		var slotHeight = getSlotHeight();
 		var usedHandle;
 		var origTimeText = timeElement.text();
+		var initialHeight;
 		eventElement.resizable({
 			handles: {
 				s: 'div.ui-resizable-s',
@@ -628,23 +630,49 @@ function AgendaEventRenderer() {
 				hideEvents(event, eventElement);
 				eventElement.css('z-index', 9);
 				if ($(ev.originalEvent.target).hasClass("ui-resizable-s")) {
-					usedHandle = "s";
+					usedHandle = 's';
 				} else {
-					usedHandle = "n";
+					usedHandle = 'n';
+				}
+				initialHeight = eventElement.height();
+				if (usedHandle === 'n') {
+					var diffToSlotGrid = (ui.originalPosition.top + 1) % slotHeight;
+					if (diffToSlotGrid) {
+						var heightDiff = Math.round(diffToSlotGrid / slotHeight) ? slotHeight - diffToSlotGrid : -1 * diffToSlotGrid;
+						// north handle used, adjust position.top of element to match current grid-size
+						ui.originalPosition.top = (ui.originalPosition.top) + heightDiff;
+						ui.originalSize.height = ui.originalSize.height - heightDiff;
+					}
+				} else {
+					var diffToSlotGrid = (ui.originalPosition.top + 1 + eventElement.outerHeight()) % slotHeight;
+					if (diffToSlotGrid) {
+						var heightDiff = Math.round(diffToSlotGrid / slotHeight) ? slotHeight - diffToSlotGrid : -1 * diffToSlotGrid;
+						// south handle used, adjust height of element to match current grid-size
+						ui.originalSize.height = eventElement.height() + heightDiff;
+					}
 				}
 				trigger('eventResizeStart', this, event, ev, ui);
 			},
 			resize: function(ev, ui) {
 				// don't rely on ui.size.height, doesn't take grid into account
-				slotDelta = Math.round((Math.max(slotHeight, eventElement.height()) - ui.originalSize.height) / slotHeight);
+				slotDelta = (eventElement.height() - initialHeight) / slotHeight;
+				var slotMinutes = opt('slotMinutes');
 				if (slotDelta != prevSlotDelta) {
-					var eventStartDate = usedHandle === 'n' ? addMinutes(cloneDate(event.start), -1 * opt('slotMinutes')*slotDelta) : event.start;
-					var eventEndDate;
-					if (!slotDelta && !event.end) {
-						eventEndDate = null;
-					} else {
-						eventEndDate = usedHandle === 's' ? addMinutes(eventEnd(event), opt('slotMinutes')*slotDelta) : event.end;
+					var minutesDiffExact = Math.round(slotMinutes * slotDelta);
+					var minutesRoundedDiff = 0;
+					var eventStartDate = event.start;
+					if (usedHandle === 'n') {
+						eventStartDate = addMinutes(cloneDate(event.start), -1 * minutesDiffExact);
+						minutesRoundedDiff = roundToSlotMinutes(eventStartDate);
 					}
+					var eventEndDate = event.end;
+					if (slotDelta && eventEndDate && usedHandle === 's') {
+						eventEndDate = addMinutes(eventEnd(event), minutesDiffExact);
+						minutesRoundedDiff = roundToSlotMinutes(eventEndDate);
+					}
+					
+					minutesDelta = minutesDiffExact - minutesRoundedDiff;
+					
 					timeElement.text(
 						formatDates(
 							eventStartDate,
@@ -658,7 +686,7 @@ function AgendaEventRenderer() {
 			stop: function(ev, ui) {
 				trigger('eventResizeStop', this, event, ev, ui);
 				if (slotDelta) {
-					eventResize(this, event, 0, opt('slotMinutes')*slotDelta, ev, ui, usedHandle === 'n');
+					eventResize(this, event, 0, minutesDelta, ev, ui, usedHandle === 'n');
 				}else{
 					timeElement.text(origTimeText);
 					eventElement.css('z-index', 8);
@@ -667,6 +695,17 @@ function AgendaEventRenderer() {
 				}
 			}
 		});
+	}
+	
+	function roundToSlotMinutes(date) {
+		if (!date) {
+			return 0;
+		}
+		var slotMinutes = opt('slotMinutes');
+		var dateMinutes = Math.round(date.getTime() / 1000 / 60);
+		var dateMinutesRounded = Math.round(dateMinutes / slotMinutes) * slotMinutes;
+		date.setTime(dateMinutesRounded * 60 * 1000);
+		return dateMinutesRounded - dateMinutes;
 	}
 	
 
