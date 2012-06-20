@@ -192,24 +192,30 @@ function AgendaEventRenderer() {
 			if (opt('selectionSpacer')) {
 				availWidth = Math.min(availWidth-6, availWidth*.95); // TODO: move this to CSS
 			}
-			if (levelI) {
-				// indented and thin
-				outerWidth = availWidth / (levelI + forward + 1);
-			}else{
-				if (forward) {
-					if (overlapping) {	// moderately wide, aligned left still
-						outerWidth = ((availWidth / (forward + 1)) - (12/2)) * 2; // 12 is the predicted width of resizer =
-					}else{
-						outerWidth = outerWidth = availWidth / (forward + 1);
-					}
+			if (opt('ignoreEventOverlap')) {
+				// ignore overlapping events and render them all with full width.
+				outerWidth = availWidth;
+				left = leftmost; // leftmost possible
+			} else {
+				if (levelI) {
+					// indented and thin
+					outerWidth = availWidth / (levelI + forward + 1);
 				}else{
-					// can be entire width, aligned left
-					outerWidth = availWidth;
+					if (forward) {
+						if (overlapping) {	// moderately wide, aligned left still
+							outerWidth = ((availWidth / (forward + 1)) - (12/2)) * 2; // 12 is the predicted width of resizer =
+						}else{
+							outerWidth = outerWidth = availWidth / (forward + 1);
+						}
+					}else{
+						// can be entire width, aligned left
+						outerWidth = availWidth;
+					}
 				}
+				left = leftmost +                                  // leftmost possible
+					(availWidth / (levelI + forward + 1) * levelI) // indentation
+					* dis + (rtl ? availWidth - outerWidth : 0);   // rtl
 			}
-			left = leftmost +                                  // leftmost possible
-				(availWidth / (levelI + forward + 1) * levelI) // indentation
-				* dis + (rtl ? availWidth - outerWidth : 0);   // rtl
 			seg.top = top;
 			seg.left = left;
 			seg.outerWidth = outerWidth - (overlapping ? 0 : 1);

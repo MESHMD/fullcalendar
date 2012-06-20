@@ -13,6 +13,7 @@ var defaults = {
 	currentTimeIndicator: false,
 
 	selectionSpacer: true,
+	ignoreEventOverlap: false,
 	
 	// editing
 	//editable: false,
