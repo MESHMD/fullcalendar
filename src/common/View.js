@@ -189,6 +189,7 @@ function View(element, calendar, viewName) {
 		moveEvents(eventsByID[eventId], dayDelta, minuteDelta, allDay);
 		var reverted = false;
 		var changeReported = false;
+		var manuallyReportEventChangeAfterUserInteraction = opt('manuallyReportEventChangeAfterUserInteraction');
 		trigger(
 			'eventDrop',
 			e,
@@ -201,14 +202,14 @@ function View(element, calendar, viewName) {
 				moveEvents(eventsByID[eventId], -dayDelta, -minuteDelta, oldAllDay);
 				revertAfterDropCallback && revertAfterDropCallback();
 				reverted = true;
-				if (changeReported) {
+				if (changeReported && !manuallyReportEventChangeAfterUserInteraction) {
 					reportEventChange(eventId);
 				}
 			},
 			ev,
 			ui
 		);
-		if (!reverted) {
+		if (!reverted && !manuallyReportEventChangeAfterUserInteraction) {
 			reportEventChange(eventId);
 			changeReported = true;
 		}
@@ -218,7 +219,8 @@ function View(element, calendar, viewName) {
 	function eventResize(e, event, dayDelta, minuteDelta, ev, ui, addToStart) {
 		var eventId = event._id;
 		elongateEvents(eventsByID[eventId], dayDelta, minuteDelta, addToStart);
-		var eventChangeReported = false;
+		var changeReported = false;
+		var manuallyReportEventChangeAfterUserInteraction = opt('manuallyReportEventChangeAfterUserInteraction');
 		trigger(
 			'eventResize',
 			e,
@@ -228,14 +230,17 @@ function View(element, calendar, viewName) {
 			function() {
 				// TODO: investigate cases where this inverse technique might not work
 				elongateEvents(eventsByID[eventId], -dayDelta, -minuteDelta, addToStart);
-				reportEventChange(eventId);
-				eventChangeReported = true;
+				if (changeReported && !manuallyReportEventChangeAfterUserInteraction) {
+					reportEventChange(eventId);
+					changeReported = true;
+				}
 			},
 			ev,
 			ui
 		);
-		if (!eventChangeReported) {
+		if (!changeReported && !manuallyReportEventChangeAfterUserInteraction) {
 			reportEventChange(eventId);
+			changeReported = true;
 		}
 	}
 	
