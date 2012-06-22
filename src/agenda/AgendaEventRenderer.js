@@ -413,6 +413,7 @@ function AgendaEventRenderer() {
 	
 	function draggableDayEvent(event, eventElement, isStart) {
 		var origWidth;
+		var origZIndex = eventElement.zIndex();
 		var revert;
 		var allDay=true;
 		var dayDelta;
@@ -422,7 +423,7 @@ function AgendaEventRenderer() {
 		var slotHeight = getSlotHeight();
 		var minMinute = getMinMinute();
 		eventElement.draggable({
-			zIndex: 9,
+			zIndex: origZIndex + 1,
 			opacity: opt('dragOpacity', 'month'), // use whatever the month view was using
 			revertDuration: opt('dragRevertDuration'),
 			start: function(ev, ui) {
@@ -622,6 +623,7 @@ function AgendaEventRenderer() {
 		var slotDelta, prevSlotDelta;
 		var minutesDelta = 0;
 		var slotHeight = getSlotHeight();
+		var origZIndex = eventElement.zIndex();		
 		var usedHandle;
 		var origTimeText = timeElement.text();
 		var initialHeight;
@@ -634,7 +636,7 @@ function AgendaEventRenderer() {
 			start: function(ev, ui) {
 				slotDelta = prevSlotDelta = 0;
 				hideEvents(event, eventElement);
-				eventElement.css('z-index', 9);
+				eventElement.zIndex(origZIndex + 1);
 				if ($(ev.originalEvent.target).hasClass("ui-resizable-s")) {
 					usedHandle = 's';
 				} else {
@@ -695,7 +697,7 @@ function AgendaEventRenderer() {
 					eventResize(this, event, 0, minutesDelta, ev, ui, usedHandle === 'n');
 				}else{
 					timeElement.text(origTimeText);
-					eventElement.css('z-index', 8);
+					eventElement.zIndex(origZIndex);
 					showEvents(event, eventElement);
 					// BUG: if event was really short, need to put title back in span
 				}
