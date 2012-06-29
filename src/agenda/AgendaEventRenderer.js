@@ -578,6 +578,7 @@ function AgendaEventRenderer() {
 					);
 					prevSlotDelta = slotDelta;
 				}
+				trigger('eventResizeProgress', this, event, ev, ui);
 			},
 			stop: function(ev, ui) {
 				trigger('eventResizeStop', this, event, ev, ui);
