@@ -82,7 +82,7 @@ function AgendaEventRenderer() {
 	
 	
 	function compileDaySegs(events) {
-		var levels = stackSegs(sliceSegs(events, $.map(events, exclEndDay), t.visStart, t.visEnd)),
+		var levels = stackSegs(sliceSegs(events, $.map(events, exclEndDay), t.visStart, t.visEnd), opt),
 			i, levelCnt=levels.length, level,
 			j, seg,
 			segs=[];
@@ -110,7 +110,7 @@ function AgendaEventRenderer() {
 			k, seg,
 			segs=[];
 		for (i=0; i<colCnt; i++) {
-			col = stackSegs(sliceSegs(events, visEventEnds, d, addMinutes(cloneDate(d), maxMinute-minMinute)));
+			col = stackSegs(sliceSegs(events, visEventEnds, d, addMinutes(cloneDate(d), maxMinute-minMinute)), opt);
 			countForwardSegs(col);
 			for (j=0; j<col.length; j++) {
 				level = col[j];
