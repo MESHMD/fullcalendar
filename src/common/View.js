@@ -43,7 +43,7 @@ function View(element, calendar, viewName) {
 	
 	function opt(name, viewNameOverride) {
 		var v = options[name];
-		if (typeof v == 'object') {
+		if (typeof v == 'object' && !v.length) {
 			return smartProperty(v, viewNameOverride || viewName);
 		}
 		return v;
@@ -66,7 +66,7 @@ function View(element, calendar, viewName) {
 	
 	
 	function isEventDraggable(event) {
-		return isEventEditable(event) && !opt('disableDragging');
+		return isEventEditable(event) && !opt('disableDragging') && !event.disableDragging;
 	}
 	
 	
@@ -123,6 +123,13 @@ function View(element, calendar, viewName) {
 	
 	
 	function reportEventClear() {
+		for (var eventId in eventElementsByID) {
+			var elements = eventElementsByID[eventId];
+			var event = eventsByID[eventId][0];
+			for (var index in elements) {
+				trigger('eventBeforeDispose', event, event, elements[index]);
+			}
+		}		
 		eventElements = [];
 		eventElementsByID = {};
 	}
@@ -176,10 +183,13 @@ function View(element, calendar, viewName) {
 	---------------------------------------------------------------------------------*/
 	
 	
-	function eventDrop(e, event, dayDelta, minuteDelta, allDay, ev, ui) {
+	function eventDrop(e, event, dayDelta, minuteDelta, allDay, ev, ui, revertAfterDropCallback) {
 		var oldAllDay = event.allDay;
 		var eventId = event._id;
 		moveEvents(eventsByID[eventId], dayDelta, minuteDelta, allDay);
+		var reverted = false;
+		var changeReported = false;
+		var manuallyReportEventChangeAfterUserInteraction = opt('manuallyReportEventChangeAfterUserInteraction');
 		trigger(
 			'eventDrop',
 			e,
@@ -190,18 +200,27 @@ function View(element, calendar, viewName) {
 			function() {
 				// TODO: investigate cases where this inverse technique might not work
 				moveEvents(eventsByID[eventId], -dayDelta, -minuteDelta, oldAllDay);
-				reportEventChange(eventId);
+				revertAfterDropCallback && revertAfterDropCallback();
+				reverted = true;
+				if (changeReported && !manuallyReportEventChangeAfterUserInteraction) {
+					reportEventChange(eventId);
+				}
 			},
 			ev,
 			ui
 		);
-		reportEventChange(eventId);
+		if (!reverted && !manuallyReportEventChangeAfterUserInteraction) {
+			reportEventChange(eventId);
+			changeReported = true;
+		}
 	}
 	
 	
-	function eventResize(e, event, dayDelta, minuteDelta, ev, ui) {
+	function eventResize(e, event, dayDelta, minuteDelta, ev, ui, addToStart) {
 		var eventId = event._id;
-		elongateEvents(eventsByID[eventId], dayDelta, minuteDelta);
+		elongateEvents(eventsByID[eventId], dayDelta, minuteDelta, addToStart);
+		var changeReported = false;
+		var manuallyReportEventChangeAfterUserInteraction = opt('manuallyReportEventChangeAfterUserInteraction');
 		trigger(
 			'eventResize',
 			e,
@@ -210,13 +229,19 @@ function View(element, calendar, viewName) {
 			minuteDelta,
 			function() {
 				// TODO: investigate cases where this inverse technique might not work
-				elongateEvents(eventsByID[eventId], -dayDelta, -minuteDelta);
-				reportEventChange(eventId);
+				elongateEvents(eventsByID[eventId], -dayDelta, -minuteDelta, addToStart);
+				if (changeReported && !manuallyReportEventChangeAfterUserInteraction) {
+					reportEventChange(eventId);
+					changeReported = true;
+				}
 			},
 			ev,
 			ui
 		);
-		reportEventChange(eventId);
+		if (!changeReported && !manuallyReportEventChangeAfterUserInteraction) {
+			reportEventChange(eventId);
+			changeReported = true;
+		}
 	}
 	
 	
@@ -241,11 +266,15 @@ function View(element, calendar, viewName) {
 	}
 	
 	
-	function elongateEvents(events, dayDelta, minuteDelta) {
+	function elongateEvents(events, dayDelta, minuteDelta, addToStart) {
 		minuteDelta = minuteDelta || 0;
 		for (var e, len=events.length, i=0; i<len; i++) {
 			e = events[i];
-			e.end = addMinutes(addDays(eventEnd(e), dayDelta, true), minuteDelta);
+			if (addToStart) {
+				e.start = addMinutes(addDays(cloneDate(e.start), -1 * dayDelta, true), -1 * minuteDelta);
+			} else {
+				e.end = addMinutes(addDays(eventEnd(e), dayDelta, true), minuteDelta);
+			}
 			normalizeEvent(e, options);
 		}
 	}

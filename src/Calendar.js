@@ -89,6 +89,7 @@ function Calendar(element, options, eventSources) {
 		headerElement = header.render();
 		if (headerElement) {
 			element.prepend(headerElement);
+			trigger("headerCreated", headerElement, headerElement);
 		}
 		changeView(options.defaultView);
 		if (options.hookWindowResize) {
@@ -248,6 +249,7 @@ function Calendar(element, options, eventSources) {
 			setSize();
 			unselect();
 			currentView.clearEvents();
+			currentView.trigger('viewRender', currentView);
 			currentView.renderEvents(events);
 			currentView.sizeDirty = false;
 		}
@@ -282,6 +284,11 @@ function Calendar(element, options, eventSources) {
 			absoluteViewElement = null;
 		}
 		currentView.setWidth(content.width(), dateChanged);
+		/* call height calculation again, as during first calculation, the day-col daynames could have
+		 * wrapped and so, the distance of the content-container to the day-names could have been falsely
+		 * calculated.
+		 */
+		currentView.setHeight(suggestedViewHeight, dateChanged);
 		ignoreWindowResize--;
 	}
 	
@@ -324,8 +331,8 @@ function Calendar(element, options, eventSources) {
 	}
 	
 	
-	function refetchEvents() {
-		fetchEvents(currentView.visStart, currentView.visEnd); // will call reportEvents
+	function refetchEvents(source) {
+		fetchEvents(currentView.visStart, currentView.visEnd, source); // will call reportEvents
 	}
 	
 	
@@ -347,6 +354,7 @@ function Calendar(element, options, eventSources) {
 		markEventsDirty();
 		if (elementVisible()) {
 			currentView.clearEvents();
+			currentView.trigger('viewRender', currentView);
 			currentView.renderEvents(events, modifiedEventID);
 			currentView.eventsDirty = false;
 		}
@@ -456,6 +464,11 @@ function Calendar(element, options, eventSources) {
 		if (name == 'height' || name == 'contentHeight' || name == 'aspectRatio') {
 			options[name] = value;
 			updateSize();
+		} else if (name.indexOf('list') == 0 || name == 'tableCols') {
+			options[name] = value;
+			currentView.start = null; // force re-render
+		} else if (name == 'maxHeight') {
+			options[name] = value;
 		}
 	}
 	

@@ -13,7 +13,8 @@ setDefaults({
 		agenda: .5
 	},
 	minTime: 0,
-	maxTime: 24
+	maxTime: 24,
+	scrollWhileDragging: false
 });
 
 
@@ -53,6 +54,7 @@ function AgendaView(element, calendar, viewName) {
 	t.getSlotHeight = function() { return slotHeight };
 	t.defaultSelectionEnd = defaultSelectionEnd;
 	t.renderDayOverlay = renderDayOverlay;
+	t.renderSlotOverlay = renderSlotOverlay;
 	t.renderSelection = renderSelection;
 	t.clearSelection = clearSelection;
 	t.reportDayClick = reportDayClick; // selection mousedown hack
@@ -394,6 +396,9 @@ function AgendaView(element, calendar, viewName) {
 
 
 	function resetScroll() {
+		if (opt('skipScrollActions')) {
+			return;
+		}
 		var d0 = zeroDate();
 		var scrollDate = cloneDate(d0);
 		scrollDate.setHours(opt('firstHour'));
@@ -412,6 +417,9 @@ function AgendaView(element, calendar, viewName) {
 	
 	
 	function afterShow() {
+		if (opt('skipScrollActions')) {
+			return;
+		}
 		slotScroller.scrollTop(savedScrollTop);
 	}
 	
@@ -605,11 +613,14 @@ function AgendaView(element, calendar, viewName) {
 	
 	// get the Y coordinate of the given time on the given day (both Date objects)
 	function timePosition(day, time) { // both date objects. day holds 00:00 of current day
-		day = cloneDate(day, true);
-		if (time < addMinutes(cloneDate(day), minMinute)) {
+		var clonedDay = cloneDate(day, true);
+		addMinutes(clonedDay, minMinute);
+		if (time < clonedDay) {
 			return 0;
 		}
-		if (time >= addMinutes(cloneDate(day), maxMinute)) {
+		clearTime(clonedDay)
+		addMinutes(clonedDay, maxMinute);
+		if (time >= clonedDay) {
 			return slotTable.height();
 		}
 		var slotMinutes = opt('slotMinutes'),
@@ -617,7 +628,7 @@ function AgendaView(element, calendar, viewName) {
 			slotI = Math.floor(minutes / slotMinutes),
 			slotTop = slotTopCache[slotI];
 		if (slotTop === undefined) {
-			slotTop = slotTopCache[slotI] = slotTable.find('tr:eq(' + slotI + ') td div')[0].offsetTop; //.position().top; // need this optimization???
+			slotTop = slotTopCache[slotI] = slotTable.find('tr').eq(slotI).find('td div')[0].offsetTop; //.position().top; // need this optimization???
 		}
 		return Math.max(0, Math.round(
 			slotTop - 1 + slotHeight * ((minutes % slotMinutes) / slotMinutes)
@@ -735,10 +746,10 @@ function AgendaView(element, calendar, viewName) {
 	function slotSelectionMousedown(ev) {
 		if (ev.which == 1 && opt('selectable')) { // ev.which==1 means left mouse button
 			unselect(ev);
-			var dates;
+			var dates, helperOption = opt('selectHelper');
 			hoverListener.start(function(cell, origCell) {
 				clearSelection();
-				if (cell && cell.col == origCell.col && !cellIsAllDay(cell)) {
+				if (cell && (cell.col == origCell.col || !helperOption) && !cellIsAllDay(cell)) {
 					var d1 = cellDate(origCell);
 					var d2 = cellDate(cell);
 					dates = [

@@ -61,7 +61,7 @@ function BasicEventRenderer() {
 			k, seg,
 			segs=[];
 		for (i=0; i<rowCnt; i++) {
-			row = stackSegs(sliceSegs(events, visEventsEnds, d1, d2));
+			row = stackSegs(sliceSegs(events, visEventsEnds, d1, d2), opt);
 			for (j=0; j<row.length; j++) {
 				level = row[j];
 				for (k=0; k<level.length; k++) {
@@ -98,8 +98,9 @@ function BasicEventRenderer() {
 	function draggableDayEvent(event, eventElement) {
 		var hoverListener = getHoverListener();
 		var dayDelta;
+		var origZIndex = eventElement.zIndex();
 		eventElement.draggable({
-			zIndex: 9,
+			zIndex: origZIndex + 1,
 			delay: 50,
 			opacity: opt('dragOpacity'),
 			revertDuration: opt('dragRevertDuration'),
