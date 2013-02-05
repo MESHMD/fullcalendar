@@ -222,7 +222,7 @@ function DayEventRenderer() {
 			}
 			html +=
 				" class='" + classes.join(' ') + "'" +
-				" style='position:absolute;z-index:8;left:"+left+"px;" + skinCss + "'" +
+				" style='position:absolute;left:"+left+"px;" + skinCss + "'" +
 				">" +
 				"<div" +
 				" class='fc-event-inner fc-event-skin'" +

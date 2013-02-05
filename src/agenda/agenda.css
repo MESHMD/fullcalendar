@@ -151,3 +151,9 @@
 	border-top: 2px solid #3ec400;
 	z-index: 999;
 }
+
+/* z-indexes */
+
+.fc-slots-container, .fc-events-container, .fc-event {
+	z-index: 1;
+}

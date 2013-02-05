@@ -221,13 +221,13 @@ function AgendaView(element, calendar, viewName) {
 		gutterCells = dayTable.find('.fc-agenda-gutter');
 		
 		slotLayer =
-			$("<div style='position:absolute;z-index:2;left:0;width:100%'/>")
+			$('<div class="fc-slots-container" style="position:absolute;left:0;width:100%"/>')
 				.appendTo(element);
 				
 		if (opt('allDaySlot')) {
 		
 			daySegmentContainer =
-				$("<div style='position:absolute;z-index:8;top:0;left:0'/>")
+				$('<div class="fc-daySegmentContainer" style="position:absolute;top:0;left:0"/>')
 					.appendTo(slotLayer);
 		
 			s =
@@ -269,7 +269,7 @@ function AgendaView(element, calendar, viewName) {
 				.appendTo(slotScroller);
 				
 		slotSegmentContainer =
-			$("<div style='position:absolute;z-index:8;top:0;left:0'/>")
+			$('<div class="fc-events-container" style="position:absolute;top:0;left:0"/>')
 				.appendTo(slotContent);
 		
 		s =

@@ -175,7 +175,7 @@ function BasicView(element, calendar, viewName) {
 		dayBind(bodyCells);
 		
 		daySegmentContainer =
-			$("<div style='position:absolute;z-index:8;top:0;left:0'/>")
+			$('<div class="fc-daySegmentContainer" style="position:absolute;top:0;left:0"/>')
 				.appendTo(element);
 	}
 	
