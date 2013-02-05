@@ -319,7 +319,7 @@ function AgendaEventRenderer() {
 		}
 		html +=
 			" class='" + classes.join(' ') + "'" +
-			" style='position:absolute;z-index:8;top:" + seg.top + "px;left:" + seg.left + "px;" + skinCss + "'" +
+			" style='position:absolute;top:" + seg.top + "px;left:" + seg.left + "px;" + skinCss + "'" +
 			">" +
 			"<div class='fc-event-inner fc-event-skin'" + skinCssAttr + ">";
 			if (opt('allowResizeTop') && seg.isStart && isEventResizable(event)) {
