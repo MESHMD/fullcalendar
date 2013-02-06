@@ -445,11 +445,10 @@ function AgendaView(element, calendar, viewName) {
 	function slotClick(ev) {
 		if (!opt('selectable')) { // if selectable, SelectionManager will worry about dayClick
 			var data = dataFromClickEvent(ev);
-			var rowMatched = ev.target.parentNode.className.match(/fc-slot(\d+)/);
 			trigger('dayClick',
 				data.column,
 				data.date,
-				! data.rowMatched,	// reversing `rowMatched` is simply here to keep compatibility with undocumented parameters
+				data.row < 0,	// reversing `row` truthiness is simply here to keep compatibility with undocumented parameters
 				ev
 			);
 		}
@@ -659,26 +658,27 @@ function AgendaView(element, calendar, viewName) {
 	*
 	*@param	{DOMevent}	domEvent	The DOM click event whose clicked time is to be computed.
 	*@returns	{Hash}	An object with the following keys:
-	*	- `{Date} date`: a Date object containing at least the date (at midnight), possibly with a time, that was clicked with through the given DOM event;
-	*	- `{Number} column`: the index of the column that was clicked;
-	*	- `{Hash} rowMatch`: the result of a call to `match(fc-slot(\d+))` on the clicked node, possibly giving away the index of the clicked row.
+	*	- `{Date} date`:		a Date object containing at least the date (at midnight), possibly with a time, that was clicked with through the given DOM event;
+	*	- `{Number} column`:	the index of the column that was clicked;
+	*	- `{Number} row`:		the index of the row that was clicked.
 	*/
 	function dataFromClickEvent(domEvent) {
-		var col = Math.min(colCnt-1, Math.floor((domEvent.pageX - dayTable.offset().left - axisWidth) / colWidth));
+		var tableOffset = dayTable.offset();
+		var col = Math.min(colCnt-1, Math.floor((domEvent.pageX - tableOffset.left - axisWidth) / colWidth));
+		var row = Math.floor((domEvent.pageY - tableOffset.top) / slotHeight) - 1;	// remove 1 because rows index is 0-based, while division is 1-based
 		var date = colDate(col);
-		var rowMatch = domEvent.target.parentNode.className.match(/fc-slot(\d+)/);
 
-		if (rowMatch) {
-			var mins = parseInt(rowMatch[1]) * opt('slotMinutes');
-			var hours = Math.floor(mins/60);
+		if (row >= 0) {	// this should always be fulfilled, since otherwise that means the click event originates from some place outside its source, but there was a conditional before code refactor, so we'll leave it as a safety net
+			var mins = row * opt('slotMinutes');
+			var hours = Math.floor(mins / 60);
 			date.setHours(hours);
-			date.setMinutes(mins%60 + minMinute);
+			date.setMinutes(mins % 60 + minMinute);
 		}
 
 		return {
 			date	: date,
 			column	: col,
-			rowMatch: rowMatch
+			row		: row
 		}
 	}
 	
