@@ -60,6 +60,7 @@ function AgendaView(element, calendar, viewName) {
 	t.reportDayClick = reportDayClick; // selection mousedown hack
 	t.dragStart = dragStart;
 	t.dragStop = dragStop;
+	t.dataFromClickEvent = dataFromClickEvent;
 	
 	
 	// imports
@@ -443,18 +444,14 @@ function AgendaView(element, calendar, viewName) {
 	
 	function slotClick(ev) {
 		if (!opt('selectable')) { // if selectable, SelectionManager will worry about dayClick
-			var col = Math.min(colCnt-1, Math.floor((ev.pageX - dayTable.offset().left - axisWidth) / colWidth));
-			var date = colDate(col);
-			var rowMatch = this.parentNode.className.match(/fc-slot(\d+)/); // TODO: maybe use data
-			if (rowMatch) {
-				var mins = parseInt(rowMatch[1]) * opt('slotMinutes');
-				var hours = Math.floor(mins/60);
-				date.setHours(hours);
-				date.setMinutes(mins%60 + minMinute);
-				trigger('dayClick', dayBodyCells[col], date, false, ev);
-			}else{
-				trigger('dayClick', dayBodyCells[col], date, true, ev);
-			}
+			var data = dataFromClickEvent(ev);
+			var rowMatched = ev.target.parentNode.className.match(/fc-slot(\d+)/);
+			trigger('dayClick',
+				data.column,
+				data.date,
+				! data.rowMatched,	// reversing `rowMatched` is simply here to keep compatibility with undocumented parameters
+				ev
+			);
 		}
 	}
 	
@@ -657,6 +654,33 @@ function AgendaView(element, calendar, viewName) {
 		return addMinutes(start, opt('defaultEventMinutes'));
 	}
 	
+
+	/** Computes the date and time that the given click event designates.
+	*
+	*@param	{DOMevent}	domEvent	The DOM click event whose clicked time is to be computed.
+	*@returns	{Hash}	An object with the following keys:
+	*	- `{Date} date`: a Date object containing at least the date (at midnight), possibly with a time, that was clicked with through the given DOM event;
+	*	- `{Number} column`: the index of the column that was clicked;
+	*	- `{Hash} rowMatch`: the result of a call to `match(fc-slot(\d+))` on the clicked node, possibly giving away the index of the clicked row.
+	*/
+	function dataFromClickEvent(domEvent) {
+		var col = Math.min(colCnt-1, Math.floor((domEvent.pageX - dayTable.offset().left - axisWidth) / colWidth));
+		var date = colDate(col);
+		var rowMatch = domEvent.target.parentNode.className.match(/fc-slot(\d+)/);
+
+		if (rowMatch) {
+			var mins = parseInt(rowMatch[1]) * opt('slotMinutes');
+			var hours = Math.floor(mins/60);
+			date.setHours(hours);
+			date.setMinutes(mins%60 + minMinute);
+		}
+
+		return {
+			date	: date,
+			column	: col,
+			rowMatch: rowMatch
+		}
+	}
 	
 	
 	/* Selection
