@@ -732,6 +732,6 @@ function countForwardSegs(levels) {
 
 
 function agendaSegsCollide(seg1, seg2) {
-	return seg1.end > seg2.start && seg1.start < seg2.end;
+	return !seg1.event.isBackground && !seg2.event.isBackground && seg1.end > seg2.start && seg1.start < seg2.end;
 }
 
